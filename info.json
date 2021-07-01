@@ -1,0 +1,12 @@
+{
+  "commit": {
+    "commit": "5bbc05746f4a16a656171c2f37105f2fa1e31fe1",
+    "author": "Jeroen Ooms <jeroenooms@gmail.com>",
+    "time": "2021-07-01 14:51:08",
+    "files": 1,
+    "merge": false,
+    "message": "Bump version\n"
+  },
+  "remote": "https://github.com/ropensci/writexl",
+  "pkg": "writexl"
+}
