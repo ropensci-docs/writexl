@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://docs.ropensci.org/writexl/404.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/authors.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/index.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/reference/write_xlsx.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/reference/writexl.html</loc>
+  </url>
+  <url>
+    <loc>https://docs.ropensci.org/writexl/reference/xl_formula.html</loc>
+  </url>
+</urlset>

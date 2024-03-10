@@ -1,0 +1,12 @@
+{
+  "commit": {
+    "commit": "03b894c93d055f587b27182d10f1bbed1dbca13f",
+    "author": "Jeroen Ooms <jeroenooms@gmail.com>",
+    "time": "2024-02-09 14:46:08",
+    "files": 1,
+    "merge": false,
+    "message": "Update URLs\n"
+  },
+  "repo": "https://github.com/ropensci/writexl",
+  "pkg": "writexl"
+}
