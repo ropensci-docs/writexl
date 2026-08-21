@@ -1,0 +1,14 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  a-getting-started: a-getting-started.html
+  b-formatting: b-formatting.html
+  c-worksheets-workbooks: c-worksheets-workbooks.html
+  d-charts-images: d-charts-images.html
+  e-formulas-and-more: e-formulas-and-more.html
+  f-everything-at-once: f-everything-at-once.html
+last_built: 2026-08-21T18:07Z
+urls:
+  reference: https://docs.ropensci.org/writexl/reference
+  article: https://docs.ropensci.org/writexl/articles

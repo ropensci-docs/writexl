@@ -1,0 +1,99 @@
+# Excel Types
+
+\* \`xl_formula(x)\` — wraps a character vector of Excel formulas (each
+must start with \`"="\`). The formulas are written to the xlsx file
+as-is and are recalculated by Excel on open.
+
+\* \`xl_hyperlink(url, name)\` — convenience wrapper that builds an
+Excel \`=HYPERLINK(url, name)\` \*\*formula\*\* for each element.
+Because the hyperlink is stored as a formula, it is readable by
+\[readxl::read_xlsx()\], which returns the formula text. Display text is
+controlled by the \`name\` argument.
+
+\* \`xl_hyperlink_cell(url, value)\` — creates a \*\*native cell-level
+hyperlink\*\* using \`worksheet_write_url_opt()\` from libxlsxwriter.
+The URL is stored as metadata attached to the cell, not in the formula
+bar. An optional \`value\` argument provides the display text shown in
+the cell. A tooltip and further options can be set by passing a named
+list to \`xl_cell_general()\` directly. \*\*Note:\*\*
+\[readxl::read_xlsx()\] cannot read cell-level hyperlinks and returns
+\`NA\` for those cells. Use \`xl_hyperlink()\` instead when
+round-tripping through readxl is required.
+
+## Usage
+
+``` r
+xl_formula(x, format = NULL)
+
+xl_hyperlink(url, value = NULL, format = NULL, name = NULL)
+
+xl_hyperlink_cell(url, value = NULL, format = NULL)
+```
+
+## Arguments
+
+- x:
+
+  character vector to be interpreted as formula
+
+- format:
+
+  An optional \[xl_format\] (or list of \`xl_format\`, one per element)
+  applied to the cells. See \[xl_format\].
+
+- url:
+
+  character vector of URLs. Use \`NA\` to produce a blank cell.
+
+- value:
+
+  character vector (or \`NULL\`) of display text shown in the cell
+  instead of the URL. When \`NULL\` the URL itself is shown. Recycled to
+  the length of \`url\`, and automatically \`NA\` for cells whose URL is
+  \`NA\`. The same argument name is used by \[xl_hyperlink_cell()\] and
+  \[xl_cell_general()\].
+
+- name:
+
+  \*\*Deprecated.\*\* The former spelling of \`value\`, kept for
+  backward compatibility. Supplying it warns and points at \`value\`;
+  supplying both is an error, since they mean the same thing. \`value\`
+  has taken the argument position \`name\` used to occupy, so code that
+  passed the display text positionally keeps working unchanged.
+
+## Details
+
+Create special column types to write to a spreadsheet.
+
+## See also
+
+Other cell content:
+[`is_xl_comment()`](https://docs.ropensci.org/writexl/reference/is_xl_comment.md),
+[`xl_cell_general()`](https://docs.ropensci.org/writexl/reference/xl_cell_general.md),
+[`xl_comment()`](https://docs.ropensci.org/writexl/reference/xl_comment.md),
+[`xl_rich_run()`](https://docs.ropensci.org/writexl/reference/xl_rich_run.md),
+[`xl_rich_string()`](https://docs.ropensci.org/writexl/reference/xl_rich_string.md)
+
+## Examples
+
+``` r
+df <- data.frame(
+  name = c("UCLA", "Berkeley", "Jeroen"),
+  founded = c(1919, 1868, 2030),
+  website = xl_hyperlink(c("http://www.ucla.edu", "http://www.berkeley.edu", NA), "homepage")
+)
+df$age <- xl_formula('=(YEAR(TODAY()) - INDIRECT("B" & ROW()))')
+write_xlsx(df, 'universities.xlsx')
+
+# xl_hyperlink_cell() stores the URL as native cell metadata.
+# readxl cannot read these cells, but they display cleanly in Excel.
+df2 <- data.frame(
+  name = c("UCLA", "Berkeley"),
+  website = xl_hyperlink_cell(c("http://www.ucla.edu", "http://www.berkeley.edu"),
+                               value = "homepage")
+)
+write_xlsx(df2, 'universities2.xlsx')
+
+# cleanup
+unlink(c('universities.xlsx', 'universities2.xlsx'))
+```

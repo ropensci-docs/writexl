@@ -1,0 +1,204 @@
+# Formulas, tables and the rest
+
+Everything a cell can hold besides a plain value, and the worksheet
+features that act on ranges.
+
+## What a cell can hold
+
+[`xl_cell_general()`](https://docs.ropensci.org/writexl/reference/xl_cell_general.md)
+is the general cell: any combination of a value, a formula, a hyperlink,
+a format and a comment. The narrower constructors —
+[`xl_formula()`](https://docs.ropensci.org/writexl/reference/xl_formula.md),
+[`xl_hyperlink()`](https://docs.ropensci.org/writexl/reference/xl_formula.md),
+[`xl_comment()`](https://docs.ropensci.org/writexl/reference/xl_comment.md)
+— return the same kind of object.
+
+### Formulas
+
+``` r
+
+df <- data.frame(x = 1:3, y = c(10, 20, 30))
+df$total <- xl_formula(sprintf("=A%d*B%d", 2:4, 2:4))
+path <- write_xlsx(df, tempfile(fileext = ".xlsx"))
+```
+
+writexl writes the formula, not its result: Excel computes the value
+when the file is opened. Give `result =` if a reader that does not
+calculate needs something to show.
+
+**Array formulas** cover a range and are entered once:
+
+``` r
+
+xl_cell_general(formula = "=SUM(A2:A4*B2:B4)", array = TRUE)
+#> [xl_cell_general: 1 cell]
+#>   [1] formula==SUM(A2:A4*B2:B4)
+xl_cell_general(formula = "=UNIQUE(A2:A10)", dynamic = TRUE)
+#> [xl_cell_general: 1 cell]
+#>   [1] formula==UNIQUE(A2:A10)
+```
+
+`array = TRUE` writes the legacy CSE form and `dynamic = TRUE` the
+modern spilling form. A multi-cell array range is declared with
+`array_range =` and must start at the cell holding the formula, and must
+not overlap cells the sheet writes itself.
+
+### Hyperlinks
+
+``` r
+
+xl_hyperlink("https://example.com", "Example")
+#> [xl_cell_general: 1 cell]
+#>   [1] formula==HYPERLINK("https://example.com","Example")
+```
+
+The second argument is the text the cell shows; without it the URL is
+shown. External URLs, `mailto:` addresses, other files and internal
+`#Sheet1!A1` references all work. Styling comes from the workbook’s
+`hyperlink_format`, and `xl_properties(hyperlink_format = NULL)` writes
+them unstyled.
+
+### Comments
+
+``` r
+
+xl_cell_general(value = 42, comment = xl_comment("Checked", author = "QA"))
+#> [xl_cell_general: 1 cell]
+#>   [1] value=42, comment=<set>
+```
+
+A comment carries its own box: size, position, colour, and whether it is
+visible when the file opens.
+
+### Rich strings
+
+One cell whose text is split into differently formatted runs:
+
+``` r
+
+xl_rich_string("Plain ", xl_rich_run("bold", xl_font(bold = TRUE)),
+               " and ", xl_rich_run("red", xl_font(color = "red")))
+#> <xl_rich_string: 4 runs>
+#>   "Plain "
+#>   "bold"  <formatted>
+#>   " and "
+#>   "red"  <formatted>
+```
+
+A run carries a font and nothing else, because that is all Excel renders
+on one. A rich string cannot share a cell with a formula or a hyperlink,
+both of which would discard the runs.
+
+### Mixed columns
+
+A column may hold different kinds of cell at different rows — a number,
+a formula, a blank, a hyperlink — by giving
+[`xl_cell_general()`](https://docs.ropensci.org/writexl/reference/xl_cell_general.md)
+lists:
+
+``` r
+
+xl_cell_general(value = list(1, NA, "text"),
+                format = list(NULL, xl_fill(background = "yellow"), NULL))
+#> [xl_cell_general: 3 cells]
+#>   [1] value=1
+#>   [2] format=<set>
+#>   [3] value=text
+```
+
+## Data validation
+
+[`xl_validation()`](https://docs.ropensci.org/writexl/reference/xl_validation.md)
+restricts what may be typed into a range, and carries the messages Excel
+shows:
+
+``` r
+
+xl_sheet(data.frame(size = c("S", "M", "L")),
+         validation = xl_validation(list(cols = "size"), type = "list",
+                                    list = c("S", "M", "L"),
+                                    input_title = "Pick a size"))
+#> <xl_sheet: 3 rows x 1 cols>
+```
+
+Dropdown lists, numeric, date, time and text-length bounds, and custom
+formulas are all available, with the criteria spelled the same way as
+elsewhere (`"=="`, `"between"`, …).
+
+## Autofilters
+
+``` r
+
+xl_sheet(data.frame(fruit = c("apple", "pear"), qty = c(5, 12)),
+         filter = xl_filter("fruit", "==", "apple"))
+#> <xl_sheet: 2 rows x 2 cols>
+```
+
+Excel stores filter criteria and hidden rows independently and does
+**not** apply a filter when a file is opened, so criteria alone would
+give a sheet that looks filtered while showing every row. writexl
+therefore evaluates the filter and hides the rows it excludes.
+
+That makes it responsible for reproducing Excel’s matching rules, which
+were measured rather than inferred. An exact value or a `list` matches
+the text a cell *displays*, so it matches the number `10` and the string
+`"10"` alike; every other criteria compares by type. Text matching is
+case-insensitive, `*` and `?` are wildcards, and blank covers an empty
+cell as well as an empty string.
+
+[`xl_filter_keep()`](https://docs.ropensci.org/writexl/reference/xl_filter_keep.md)
+exposes the rule on its own, without writing anything:
+
+``` r
+
+df <- data.frame(fruit = c("apple", "pear", "plum"), qty = c(5, 12, 7))
+xl_filter_keep(df, xl_filter("qty", ">", 6))
+#> [1] FALSE  TRUE  TRUE
+```
+
+## Worksheet tables
+
+A table is a named, styled range Excel treats as a unit: banded rows, a
+filter dropdown, structured references, an optional total row.
+
+``` r
+
+xl_sheet(data.frame(item = c("a", "b"), qty = c(3, 4)),
+         table = xl_table(name = "Stock", total_row = TRUE,
+                          columns = xl_table_column("qty", total = "sum")))
+#> <xl_sheet: 2 rows x 2 cols>
+```
+
+Column headers always come from the data frame’s names.
+`worksheet_add_table()` would otherwise write its own generic captions
+over them, and Excel treats a mismatch between the table part and the
+header cells as a corrupt file.
+
+Table names are made unique across the workbook. A table turns off the
+row-streaming mode described in [Worksheets and
+workbooks](https://docs.ropensci.org/writexl/articles/c-worksheets-workbooks.md),
+and cannot sit on the same range as the sheet’s own autofilter.
+
+## Merged cells
+
+``` r
+
+xl_sheet(data.frame(a = 1:2, b = 3:4),
+         merge = xl_merge("A1:B1", "Heading",
+                          format = xl_align(horizontal = "center")))
+#> <xl_sheet: 2 rows x 2 cols>
+```
+
+A merged range holds one value, so
+[`xl_merge()`](https://docs.ropensci.org/writexl/reference/xl_merge.md)
+carries its own text. Merging over cells the data frame filled keeps
+only the merged text, exactly as merging does in Excel.
+
+## Elsewhere
+
+- Styling any of this: [Formatting
+  cells](https://docs.ropensci.org/writexl/articles/b-formatting.md)
+- Sheet layout, printing, workbook properties: [Worksheets and
+  workbooks](https://docs.ropensci.org/writexl/articles/c-worksheets-workbooks.md)
+- Charts, chartsheets, pictures: [Charts and
+  images](https://docs.ropensci.org/writexl/articles/d-charts-images.md)

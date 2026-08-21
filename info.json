@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "commit": "f4c283d996049da30d8704cbdddcf1e5579e2b49",
+    "author": "Bill Denney <billdenney@users.noreply.github.com>",
+    "time": "2026-08-21T17:49:33Z",
+    "files": 3,
+    "merge": false,
+    "message": "Prepare for v2.0.1 release (#150)\n\n* Update with roxygen2 v8.1.0\n\n* As submitted to CRAN for v2.0.1"
+  },
+  "repo": "https://github.com/ropensci/writexl",
+  "pkg": "writexl",
+  "time": "2026-08-21T18:07:43Z"
+}
