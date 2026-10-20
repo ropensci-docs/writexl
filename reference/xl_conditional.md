@@ -1,0 +1,223 @@
+# Format cells according to their contents
+
+Excel's conditional formatting, in four flavours:
+
+\* \`xl_cond_cell()\` — a rule with a format: comparisons, text matches,
+time periods, above/below average, top/bottom N, duplicates, blanks,
+errors, or an arbitrary formula. \* \`xl_cond_scale()\` — a two- or
+three-colour scale across the range. \* \`xl_cond_bar()\` — in-cell data
+bars. \* \`xl_cond_icons()\` — one of Excel's built-in icon sets.
+
+Pass one or a list of them as \`xl_sheet(conditional = )\`.
+
+## Usage
+
+``` r
+xl_cond_cell(
+  range,
+  type = NA,
+  criteria = NA,
+  value = NULL,
+  min = NULL,
+  max = NULL,
+  format = NULL,
+  stop_if_true = NA,
+  multi_range = NA
+)
+
+xl_cond_scale(
+  range,
+  colors = c("red", "yellow", "green"),
+  values = NULL,
+  rule_types = NULL,
+  stop_if_true = NA,
+  multi_range = NA
+)
+
+xl_cond_bar(
+  range,
+  color = NA,
+  values = NULL,
+  rule_types = NULL,
+  solid = NA,
+  negative_color = NA,
+  border_color = NA,
+  negative_border_color = NA,
+  no_border = NA,
+  direction = NA,
+  axis = NA,
+  axis_color = NA,
+  bar_only = NA,
+  stop_if_true = NA,
+  multi_range = NA
+)
+
+xl_cond_icons(
+  range,
+  style = "3_traffic_lights",
+  reverse = NA,
+  icons_only = NA,
+  stop_if_true = NA,
+  multi_range = NA
+)
+```
+
+## Arguments
+
+- range:
+
+  The cells the rule applies to: an Excel range string such as
+  \`"B2:B100"\`, a single cell, or a \`list(rows = , cols = )\` spec.
+
+- type:
+
+  The kind of rule, when it cannot be inferred from \`criteria\`:
+  \`"cell"\`, \`"text"\`, \`"time_period"\`, \`"average"\`, \`"top"\`,
+  \`"bottom"\`, \`"duplicate"\`, \`"unique"\`, \`"blanks"\`,
+  \`"no_blanks"\`, \`"errors"\`, \`"no_errors"\` or \`"formula"\`.
+
+- criteria:
+
+  How the rule decides, which depends on \`type\`: \`"=="\`, \`"!="\`,
+  \`"\>"\`, \`"\<"\`, \`"\>="\`, \`"\<="\`, \`"between"\`, \`"not
+  between"\` for \`"cell"\`; \`"contains"\`, \`"not contains"\`,
+  \`"begins with"\`, \`"ends with"\` for \`"text"\`; \`"yesterday"\`,
+  \`"today"\`, \`"tomorrow"\`, \`"last 7 days"\`, \`"last week"\`,
+  \`"this week"\`, \`"next week"\`, \`"last month"\`, \`"this month"\`,
+  \`"next month"\` for \`"time_period"\`; \`"above"\`, \`"below"\`,
+  \`"above or equal"\`, \`"below or equal"\` and the \`"N std dev
+  above"\` / \`"below"\` variants for \`"average"\`; and \`"percent"\`
+  for \`"top"\` / \`"bottom"\`.
+
+  Pairing a criteria with the wrong \`type\` is an error — Excel would
+  accept the file and silently ignore the rule.
+
+- value:
+
+  What the criteria compares against: a number, a string (for the text
+  criteria), or an \`"=..."\` formula. For \`"top"\` / \`"bottom"\` it
+  is the N. Use \`min\` and \`max\` for \`"between"\` / \`"not
+  between"\`.
+
+- min, max:
+
+  The two bounds for \`"between"\` / \`"not between"\`.
+
+- format:
+
+  The \[xl_format\] applied to cells that match.
+
+- stop_if_true:
+
+  Logical; if this rule matches, skip the later rules on the same cells.
+
+- multi_range:
+
+  A further set of ranges the rule also covers, as an Excel multi-range
+  string such as \`"B3:K6 B9:K12"\`.
+
+- colors:
+
+  Two or three colours for the scale, from lowest to highest. Two gives
+  a two-colour scale, three a three-colour scale.
+
+- values:
+
+  Optional values marking where each colour sits, in the same order as
+  \`colors\`. Defaults to the range's minimum, midpoint and maximum.
+
+- rule_types:
+
+  How each entry of \`values\` is interpreted: \`"minimum"\`,
+  \`"maximum"\`, \`"number"\`, \`"percent"\`, \`"percentile"\`,
+  \`"formula"\`, \`"auto_min"\` or \`"auto_max"\`.
+
+- color:
+
+  The bar's fill colour.
+
+- solid:
+
+  Logical; a solid bar rather than Excel's default gradient.
+
+- negative_color, border_color, negative_border_color, axis_color:
+
+  Colours for the negative portion, the bar border, the negative border,
+  and the axis line.
+
+- no_border:
+
+  Logical; draw the bar without a border.
+
+- direction:
+
+  \`"context"\` (follow the sheet), \`"left to right"\` or \`"right to
+  left"\`.
+
+- axis:
+
+  Where the zero axis sits: \`"automatic"\`, \`"midpoint"\` or
+  \`"none"\`.
+
+- bar_only:
+
+  Logical; show the bar without the cell's value.
+
+- style:
+
+  Which built-in icon set: one of \`"3_arrows"\`, \`"3_arrows_gray"\`,
+  \`"3_flags"\`, \`"3_traffic_lights"\`, \`"3_traffic_lights_rimmed"\`,
+  \`"3_signs"\`, \`"3_symbols_circled"\`, \`"3_symbols"\`,
+  \`"4_arrows"\`, \`"4_arrows_gray"\`, \`"4_red_to_black"\`,
+  \`"4_ratings"\`, \`"4_traffic_lights"\`, \`"5_arrows"\`,
+  \`"5_arrows_gray"\`, \`"5_ratings"\` or \`"5_quarters"\`. These are
+  Excel's own icons, not images, so nothing is embedded in the file.
+
+- reverse:
+
+  Logical; reverse the order the icons are assigned in.
+
+- icons_only:
+
+  Logical; show the icon without the cell's value.
+
+## Value
+
+An \`xl_conditional\` object.
+
+## See also
+
+\[xl_sheet\], \[xl_format\]
+
+Other worksheet features:
+[`xl_filter()`](https://docs.ropensci.org/writexl/reference/xl_filter.md),
+[`xl_filter_keep()`](https://docs.ropensci.org/writexl/reference/xl_filter_keep.md),
+[`xl_merge()`](https://docs.ropensci.org/writexl/reference/xl_merge.md),
+[`xl_table()`](https://docs.ropensci.org/writexl/reference/xl_table.md),
+[`xl_table_column()`](https://docs.ropensci.org/writexl/reference/xl_table_column.md),
+[`xl_validation()`](https://docs.ropensci.org/writexl/reference/xl_validation.md)
+
+## Examples
+
+``` r
+xl_cond_cell("B2:B100", criteria = ">", value = 100, format = xl_fill(background = "red"))
+#> <xl_conditional: cell on B2:B100>
+xl_cond_cell("C2:C100", type = "text", criteria = "contains", value = "urgent",
+             format = xl_font(bold = TRUE))
+#> <xl_conditional: cell on C2:C100>
+xl_cond_cell("D2:D100", type = "duplicate",
+             format = xl_fill(background = "yellow"))
+#> <xl_conditional: cell on D2:D100>
+xl_cond_scale("C2:C100", colors = c("red", "yellow", "green"))
+#> <xl_conditional: scale on C2:C100>
+xl_cond_scale("C2:C100", colors = c("white", "steelblue"))
+#> <xl_conditional: scale on C2:C100>
+xl_cond_bar("D2:D100", color = "steelblue")
+#> <xl_conditional: bar on D2:D100>
+xl_cond_bar("D2:D100", color = "green", solid = TRUE, bar_only = TRUE)
+#> <xl_conditional: bar on D2:D100>
+xl_cond_icons("E2:E100", style = "3_traffic_lights")
+#> <xl_conditional: icons on E2:E100>
+xl_cond_icons("E2:E100", style = "5_ratings", icons_only = TRUE)
+#> <xl_conditional: icons on E2:E100>
+```

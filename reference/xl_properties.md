@@ -1,0 +1,153 @@
+# Workbook properties, defaults, and metadata
+
+\`xl_properties()\` collects everything that applies at the \*workbook\*
+level: document metadata, a few native workbook settings, and the
+formatting defaults that used to be hard-coded. The formatting defaults
+are ordinary \[xl_format\] objects, so you can override them (e.g.
+change the header style or the default date format) simply by passing a
+different \`xl_format\`.
+
+The \`default_format\` is cascaded \*under\* every cell (an emulated
+workbook-wide default: libxlsxwriter has no native "Normal style"
+setter, so it is merged beneath each cell/column format).
+\`header_format\` styles the header row and \`hyperlink_format\` styles
+cell hyperlinks; both are also cascaded over \`default_format\`.
+
+## Usage
+
+``` r
+xl_properties(
+  title = NA,
+  subject = NA,
+  author = NA,
+  manager = NA,
+  company = NA,
+  category = NA,
+  keywords = NA,
+  comments = NA,
+  status = NA,
+  hyperlink_base = NA,
+  created = NA,
+  na = NA,
+  custom = NULL,
+  read_only = FALSE,
+  window_size = NULL,
+  names = NULL,
+  default_format = xl_format(),
+  header_format = xl_font(bold = TRUE) + xl_align(horizontal = "center"),
+  hyperlink_format = xl_font(color = "blue", underline = "single"),
+  date_format = xl_num_format("yyyy-mm-dd"),
+  datetime_format = .default_datetime_format(),
+  date_col_width = 20,
+  datetime_col_width = 20,
+  header_row_height = 15
+)
+```
+
+## Arguments
+
+- title, subject, author, manager, company, category, keywords,
+  comments, status, hyperlink_base:
+
+  Document metadata strings (Excel's "Properties" dialog).
+
+- created:
+
+  The workbook's creation timestamp, a \`Date\` or \`POSIXct\`. Left
+  \`NA\` libxlsxwriter stamps the moment the file is written, which is
+  what makes two runs over the same data differ; pinning it makes them
+  byte-identical.
+
+- na:
+
+  What to write where a value has none — an \`NA\` or \`NaN\` in the
+  data, or a cell with nothing in it at all. \`NA\` (the default) leaves
+  the cell blank, which is what writexl has always done. Anything else
+  is written in its place, keeping its own type: \`na = "Not
+  available"\` writes a string, \`na = 0\` a number. A column or an
+  individual cell can override it — see \[xl_col_spec()\] and
+  \[xl_cell_general()\]. Note that a non-blank \`na\` in a numeric
+  column makes that column mixed, so a reader such as
+  \[readxl::read_xlsx()\] returns the whole column as character.
+
+- custom:
+
+  A named list of custom document properties. Values may be character,
+  integer, numeric, logical, \`Date\` or \`POSIXct\`. A \`Date\` or
+  \`POSIXct\` is written as a real datetime property (not as text) and
+  follows the same workbook-wide time zone rule as datetime cells,
+  described below.
+
+- read_only:
+
+  Logical; mark the workbook read-only recommended.
+
+- window_size:
+
+  Optional integer vector \`c(width, height)\` for the workbook window
+  size.
+
+- names:
+
+  A named list of workbook-scoped defined names, each a formula string
+  (e.g. \`list(tax = "=0.2")\`).
+
+- default_format:
+
+  An \[xl_format\] cascaded under every cell (default: none).
+
+- header_format:
+
+  An \[xl_format\] for the header row (default: bold, centered).
+
+- hyperlink_format:
+
+  An \[xl_format\] for cell hyperlinks (default: blue, underlined), or
+  \`NULL\` for no hyperlink styling at all. \`NULL\` is the only way to
+  write an unstyled hyperlink: an empty \`xl_format()\` leaves the cell
+  with no format, and Excel files written that way fall back to
+  libxlsxwriter's own blue-underlined default.
+
+- date_format, datetime_format:
+
+  \[xl_format\] number formats applied to \`Date\` / \`POSIXct\` values.
+
+- date_col_width, datetime_col_width:
+
+  Default column width for \`Date\` / \`POSIXct\` columns.
+
+- header_row_height:
+
+  Height (in points) of the header row.
+
+## Value
+
+An \`xl_properties\` object.
+
+## Time zones
+
+Excel has no concept of a time zone. When every \`POSIXct\` in the
+workbook shares one time zone, writexl drops the zone and writes local
+wall-clock time, and the default \`datetime_format\` loses its \`"
+UTC"\` suffix so that nothing is mislabelled. When the time zones
+differ, all datetimes are converted to UTC with a warning. Supplying
+your own \`datetime_format\` overrides the label in either case.
+
+## See also
+
+\[xl_workbook\], \[write_xlsx\]
+
+Other workbook settings:
+[`write_xlsx()`](https://docs.ropensci.org/writexl/reference/write_xlsx.md),
+[`xl_workbook()`](https://docs.ropensci.org/writexl/reference/xl_workbook.md)
+
+## Examples
+
+``` r
+xl_properties(title = "Quarterly report", author = "Finance",
+              header_format = xl_font(bold = TRUE, color = "white") +
+                              xl_fill(background = "navy"))
+#> <xl_properties>
+#>   title: Quarterly report
+#>   author: Finance
+```
